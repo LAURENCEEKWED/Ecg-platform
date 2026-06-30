@@ -1,0 +1,25 @@
+{
+  "name": "ecg-ai-platform",
+  "version": "1.0.0",
+  "description": "Cloud-Native Hospital ECG Integration & AI Cardiovascular Risk Prediction Platform",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:ml\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:ml": "cd ml && python main.py",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "train": "cd ml && python train_all.py"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "dependencies": {
+    "nodemailer": "^9.0.1",
+    "twilio": "^6.0.2"
+  }
+}

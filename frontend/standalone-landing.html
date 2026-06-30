@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECG AI Platform</title>
+  <style>
+    :root {
+      --primary: #1f4e79;
+      --primary-light: #2e75b6;
+      --primary-dark: #0f172a;
+      --secondary: #107c41;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #107c41;
+      --risk-high: #c00000;
+      --risk-high-bg: #fff0f0;
+      --risk-moderate: #ff8c00;
+      --risk-moderate-bg: #fff8ec;
+      --risk-low: #107c41;
+      --risk-low-bg: #f0fff4;
+      --bg-primary: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-sidebar: #0f172a;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --text-on-dark: #f8fafc;
+      --border: #e2e8f0;
+      --border-light: #f1f5f9;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+      --shadow-card: 0 2px 8px rgba(31,78,121,0.08);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Navigation */
+    .landing-nav {
+      background: var(--primary-dark);
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .landing-nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .landing-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .landing-brand-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-light);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .landing-brand-name {
+      font-weight: 700;
+      font-size: 1.125rem;
+      display: block;
+    }
+
+    .landing-brand-sub {
+      font-size: 0.75rem;
+      opacity: 0.7;
+      display: block;
+    }
+
+    .landing-nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .landing-nav-links a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .landing-nav-links a:hover {
+      color: white;
+    }
+
+    /* Hero Section */
+    .landing-hero {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, var(--primary-light) 100%);
+      padding: 80px 0 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .landing-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 70% 50%, rgba(255,255,255,0.06) 0%, transparent 60%);
+    }
+
+    .landing-hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      position: relative;
+    }
+
+    .landing-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.9);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+
+    .landing-hero-content h1 {
+      color: white;
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .landing-hero-content p {
+      color: rgba(255,255,255,0.85);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 32px;
+      max-width: 520px;
+    }
+
+    .landing-hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-secondary {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-light);
+    }
+
+    .btn-lg {
+      padding: 14px 28px;
+      font-size: 1rem;
+    }
+
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 0.75rem;
+    }
+
+    .landing-hero-stats {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .landing-hero-stats div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .landing-hero-stats strong {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+    .landing-hero-stats span {
+      color: rgba(255,255,255,0.55);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    /* ECG Card */
+    .landing-ecg-card {
+      background: #0a1628;
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .landing-ecg-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .landing-ecg-svg {
+      width: 100%;
+      height: 80px;
+    }
+
+    .landing-ecg-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* ECG Stickers */
+    .ecg-sticker {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-15deg) translateY(0);
+      box-shadow: 0 15px 40px rgba(37, 99, 235, 0.4);
+      animation: float 4s ease-in-out infinite;
+      z-index: 2;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: rotate(-15deg) translateY(0); }
+      50% { transform: rotate(-10deg) translateY(-18px); }
+    }
+
+    /* Sections */
+    .landing-section {
+      padding: 80px 0;
+    }
+
+    .landing-section-alt {
+      background: var(--bg-card);
+    }
+
+    .landing-section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .landing-section-tag {
+      display: inline-block;
+      background: rgba(46, 117, 182, 0.1);
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .landing-section-header h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .landing-section-header p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Cards */
+    .landing-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .landing-info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      transition: all 0.3s ease;
+    }
+
+    .landing-info-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .landing-info-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(46, 117, 182, 0.1);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .landing-info-card h3 {
+      font-size: 1.125rem;
+      margin-bottom: 10px;
+    }
+
+    .landing-info-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Features */
+    .landing-features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .landing-feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .landing-feature-card:hover {
+      border-color: var(--primary-light);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .landing-feature-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(46, 117, 182, 0.1);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .landing-feature-card h4 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .landing-feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* Image Grid */
+    .landing-image-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .landing-image-card {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      transform-style: preserve-3d;
+      background: var(--bg-card);
+    }
+
+    .landing-image-card:hover {
+      transform: translateY(-15px) rotateY(3deg) rotateX(2deg);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+    }
+
+    .landing-image {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .landing-image-card:hover .landing-image {
+      transform: scale(1.08);
+    }
+
+    .landing-image-card-content {
+      padding: 24px;
+    }
+
+    .landing-image-card h4 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .landing-image-card p {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+    }
+
+    /* Developer Card */
+    .landing-developer-card {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      max-width: 850px;
+      margin: 0 auto;
+      box-shadow: var(--shadow-card);
+    }
+
+    .landing-developer-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .landing-developer-info h3 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    .landing-developer-title {
+      color: var(--primary-light);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      margin-bottom: 18px;
+    }
+
+    .landing-developer-bio {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .landing-developer-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .landing-developer-meta span {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .landing-skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .landing-skill-tag {
+      background: rgba(31,78,121,0.08);
+      color: var(--primary);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(31,78,121,0.15);
+    }
+
+    /* CTA Banner */
+    .landing-cta-banner {
+      margin-top: 40px;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      border-radius: var(--radius-xl);
+      padding: 36px 40px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .landing-cta-banner h3 {
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .landing-cta-banner p {
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* Footer */
+    .landing-footer {
+      background: var(--primary-dark);
+      padding: 32px 0;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .landing-footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .landing-footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .landing-footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .landing-footer-links a {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.82rem;
+      text-decoration: none;
+    }
+
+    .landing-footer-links a:hover {
+      color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+      .landing-hero-inner,
+      .landing-cards-grid,
+      .landing-features-grid,
+      .landing-image-grid {
+        grid-template-columns: 1fr;
+      }
+      .landing-nav-links {
+        gap: 12px;
+      }
+      .landing-developer-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-page">
+    <!-- Navigation -->
+    <nav class="landing-nav">
+      <div class="container">
+        <div class="landing-nav-inner">
+          <a href="#" class="landing-brand">
+            <div class="landing-brand-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="white"/>
+              </svg>
+            </div>
+            <div>
+              <span class="landing-brand-name">ECG AI Platform</span>
+              <span class="landing-brand-sub">Advanced Cardiac Intelligence</span>
+            </div>
+          </a>
+          <div class="landing-nav-links">
+            <a href="#">Sign In</a>
+            <a href="#" class="btn btn-primary btn-sm">Get Started</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="landing-hero">
+      <div class="container">
+        <div class="landing-hero-inner">
+          <div class="landing-hero-content">
+            <span class="landing-badge">AI-Powered Cardiac Intelligence for Africa</span>
+            <h1>Smarter ECG Analysis.<br>Faster Life-Saving Decisions.</h1>
+            <p>
+              A cloud-native platform connecting hospital ECG machines to real-time AI analysis.
+              Detect arrhythmias, predict cardiovascular risk, and alert doctors — all in seconds.
+            </p>
+            <div class="landing-hero-actions">
+              <a href="#" class="btn btn-primary btn-lg">
+                Get Started
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12h14M12 5l7 7-7 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <a href="#" class="btn btn-secondary btn-lg">Sign In to Dashboard</a>
+            </div>
+            <div class="landing-hero-stats">
+              <div>
+                <strong>97.6%</strong>
+                <span>AI F1-Score</span>
+              </div>
+              <div>
+                <strong>&lt;5s</strong>
+                <span>Alert Dispatch</span>
+              </div>
+              <div>
+                <strong>5</strong>
+                <span>Rhythm Classes</span>
+              </div>
+              <div>
+                <strong>12-Lead</strong>
+                <span>ECG Support</span>
+              </div>
+            </div>
+          </div>
+          <div class="landing-hero-visual">
+            <div class="ecg-sticker" style="top: 30px; right: 10px;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="ecg-sticker" style="bottom: 40px; left: 0; animation-delay: 1.5s;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="white"/>
+              </svg>
+            </div>
+            <div class="landing-ecg-card">
+              <div class="landing-ecg-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Real-Time ECG Monitor
+              </div>
+              <svg class="landing-ecg-svg" viewBox="0 0 400 100">
+                <path
+                  d="M0,50 L50,50 L60,30 L70,50 L80,70 L90,50 L150,50 L160,30 L170,50 L180,70 L190,50 L250,50 L260,30 L270,50 L280,70 L290,50 L350,50 L360,30 L370,50 L380,70 L390,50 L400,50"
+                  fill="none"
+                  stroke="#22c55e"
+                  stroke-width="2"
+                />
+              </svg>
+              <div class="landing-ecg-footer">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span style="font-size: 0.875rem; font-weight: 600; color: white;">85 BPM</span>
+                </div>
+                <div style="font-size: 0.75rem; color: #64748b;">Live</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Patient & Doctor Interaction -->
+    <section class="landing-section">
+      <div class="container">
+        <div class="landing-section-header">
+          <span class="landing-section-tag">Our Mission</span>
+          <h2>Connecting Doctors and Patients</h2>
+          <p>Bridging the gap between bedside ECG machines and intelligent cardiac insights</p>
+        </div>
+        <div class="landing-image-grid">
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/doctor1/800/800"
+              alt="Doctor consultation"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>Personalized Consultations</h4>
+              <p>Doctors can review ECG results and provide immediate care</p>
+            </div>
+          </div>
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/ecg1/800/800"
+              alt="ECG Analysis"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>Advanced ECG Analysis</h4>
+              <p>AI-powered interpretation of heart rhythms</p>
+            </div>
+          </div>
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/monitor1/800/800"
+              alt="Patient Monitoring"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>Continuous Patient Monitoring</h4>
+              <p>Real-time tracking of patient vitals</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Understanding ECG Section -->
+    <section class="landing-section landing-section-alt">
+      <div class="container">
+        <div class="landing-section-header">
+          <span class="landing-section-tag">Heart Health</span>
+          <h2>Understanding ECG & Heart Health</h2>
+          <p>Electrocardiography is one of the most important tools in modern medicine</p>
+        </div>
+        <div class="landing-cards-grid">
+          <div class="landing-info-card">
+            <div class="landing-info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>What is an ECG?</h3>
+            <p>An electrocardiogram (ECG) records the electrical activity of your heart. Each heartbeat produces a wave pattern that doctors use to detect arrhythmias, heart attacks, and other cardiovascular conditions.</p>
+          </div>
+          <div class="landing-info-card">
+            <div class="landing-info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Why It Matters</h3>
+            <p>Cardiovascular disease is the leading cause of death worldwide. Early detection through ECG monitoring can save lives — especially in regions where specialist cardiologists are scarce.</p>
+          </div>
+          <div class="landing-info-card">
+            <div class="landing-info-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 3v18M15 3v18M3 9h18M3 15h18" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>AI-Enhanced Analysis</h3>
+            <p>Modern AI models can classify heart rhythms with over 97% accuracy, flagging dangerous patterns like atrial fibrillation or tachycardia in seconds instead of hours.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- App Features -->
+    <section class="landing-section">
+      <div class="container">
+        <div class="landing-section-header">
+          <span class="landing-section-tag">The Platform</span>
+          <h2>About the ECG AI Platform</h2>
+          <p>Built for hospitals, doctors, and patients — bridging the gap between bedside ECG machines and intelligent cardiac insights</p>
+        </div>
+        <div class="landing-features-grid">
+          <div class="landing-feature-card">
+            <div class="landing-feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h4>1D-CNN Arrhythmia Detection</h4>
+            <p>5 rhythm classes with 97.6% weighted F1-score</p>
+          </div>
+          <div class="landing-feature-card">
+            <div class="landing-feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#1f4e79" stroke-width="2"/>
+              </svg>
+            </div>
+            <h4>CVD Risk Prediction</h4>
+            <p>XGBoost model scores cardiovascular risk 0-100</p>
+          </div>
+          <div class="landing-feature-card">
+            <div class="landing-feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="#1f4e79" stroke-width="2"/>
+                <path d="M12 6v6l4 2" stroke="#1f4e79" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h4>Real-Time Alerts</h4>
+            <p>SMS & email dispatch in under 5 seconds for HIGH risk</p>
+          </div>
+          <div class="landing-feature-card">
+            <div class="landing-feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#1f4e79" stroke-width="2"/>
+                <circle cx="9" cy="7" r="4" stroke="#1f4e79" stroke-width="2"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#1f4e79" stroke-width="2"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#1f4e79" stroke-width="2"/>
+              </svg>
+            </div>
+            <h4>Multi-Hospital Integration</h4>
+            <p>HL7 FHIR R4 · Secure HTTPS API for any hospital</p>
+          </div>
+          <div class="landing-feature-card">
+            <div class="landing-feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="#1f4e79" stroke-width="2"/>
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="#1f4e79" stroke-width="2"/>
+              </svg>
+            </div>
+            <h4>Cloud-Native Architecture</h4>
+            <p>Scalable, accessible from any device, anywhere</p>
+          </div>
+          <div class="landing-feature-card">
+            <div class="landing-feature-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#1f4e79" stroke-width="2"/>
+              </svg>
+            </div>
+            <h4>Patient & Doctor Portals</h4>
+            <p>Dedicated dashboards for clinicians and patients</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- More Images Section -->
+    <section class="landing-section landing-section-alt">
+      <div class="container">
+        <div class="landing-section-header">
+          <span class="landing-section-tag">Features</span>
+          <h2>Comprehensive Capabilities</h2>
+          <p>Everything you need for modern cardiac care in one platform</p>
+        </div>
+        <div class="landing-image-grid">
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/hospital1/800/800"
+              alt="Hospital Workflow"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>Hospital Workflow</h4>
+              <p>Seamless integration into existing clinical processes</p>
+            </div>
+          </div>
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/patient1/800/800"
+              alt="Patient Monitoring"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>Patient Monitoring</h4>
+              <p>24/7 continuous cardiac monitoring</p>
+            </div>
+          </div>
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/telemed1/800/800"
+              alt="Telemedicine"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>Telemedicine</h4>
+              <p>Remote consultations from anywhere</p>
+            </div>
+          </div>
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/analytics1/800/800"
+              alt="Data Analytics"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>Data Analytics</h4>
+              <p>Comprehensive reports and insights</p>
+            </div>
+          </div>
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/doctor2/800/800"
+              alt="Doctor Consultation"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>Doctor Consultation</h4>
+              <p>Direct access to cardiologists</p>
+            </div>
+          </div>
+          <div class="landing-image-card">
+            <img
+              src="https://picsum.photos/seed/ecg2/800/800"
+              alt="ECG Analysis"
+              class="landing-image"
+            >
+            <div class="landing-image-card-content">
+              <h4>ECG Analysis</h4>
+              <p>Advanced AI-powered interpretation</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Developer Section -->
+    <section class="landing-section">
+      <div class="container">
+        <div class="landing-section-header">
+          <span class="landing-section-tag">The Team</span>
+          <h2>About the Developer</h2>
+        </div>
+        <div class="landing-developer-card">
+          <div class="landing-developer-avatar">
+            AM
+          </div>
+          <div class="landing-developer-info">
+            <h3>Alex Morgan</h3>
+            <p class="landing-developer-title">Full-Stack Developer</p>
+            <p class="landing-developer-bio">Building healthcare technologies to improve access to quality care.</p>
+            <div class="landing-developer-meta">
+              <span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                University of Health Sciences
+              </span>
+              <span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="#475569" stroke-width="2"/>
+                  <circle cx="12" cy="10" r="3" stroke="#475569" stroke-width="2"/>
+                </svg>
+                Kampala, Uganda
+              </span>
+              <span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#475569" stroke-width="2"/>
+                  <polyline points="22,6 12,13 2,6" stroke="#475569" stroke-width="2"/>
+                </svg>
+                alex.morgan@example.com
+              </span>
+              <span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="#475569" stroke-width="2"/>
+                </svg>
+                +256 772 000 000
+              </span>
+            </div>
+            <div class="landing-skills">
+              <span class="landing-skill-tag">React</span>
+              <span class="landing-skill-tag">Node.js</span>
+              <span class="landing-skill-tag">Python</span>
+              <span class="landing-skill-tag">Machine Learning</span>
+              <span class="landing-skill-tag">Healthcare Tech</span>
+            </div>
+            <p style="margin-top: 12px; color: var(--text-secondary); font-size: 0.875rem;">
+              Department of Computer Science · Academic Year 2024
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="landing-section">
+      <div class="container">
+        <div class="landing-cta-banner">
+          <div>
+            <h3>Ready to explore the platform?</h3>
+            <p>Create a patient account or sign in as a doctor to access the full dashboard</p>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <a href="#" class="btn btn-secondary">Create Account</a>
+            <a href="#" class="btn btn-primary">Sign In</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="container">
+        <div class="landing-footer-inner">
+          <div class="landing-footer-brand">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            ECG AI Platform
+          </div>
+          <div class="landing-footer-links">
+            <a href="#features">Features</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+          </div>
+          <div style="color: rgba(255,255,255,0.6); font-size: 0.875rem;">
+            University of Health Sciences · Department of Computer Science · 2024
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

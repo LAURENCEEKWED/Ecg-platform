@@ -72,16 +72,22 @@ const ECGWaveform = ({
   grid = true,
   animate = true,
   color = '#dc2626',
-  strokeWidth = 2
+  strokeWidth = 2,
+  data = null // New prop to pass real ECG data array
 }) => {
   const canvasRef = useRef(null);
   const timeRef = useRef(0);
   const animationRef = useRef(null);
 
   const getWaveformValue = useCallback((t) => {
+    if (data && data.length > 0) {
+      // Use real data: sample from data array
+      const idx = Math.floor((t % (data.length / 500)) * 500);
+      return data[idx % data.length];
+    }
     const generator = ECGWaveforms[rhythmType] || ECGWaveforms.NORMAL;
     return generator(t);
-  }, [rhythmType]);
+  }, [rhythmType, data]);
 
   const drawGrid = useCallback((ctx, w, h) => {
     ctx.strokeStyle = 'rgba(220, 38, 38, 0.1)';

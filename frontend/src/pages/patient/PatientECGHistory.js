@@ -4,7 +4,7 @@ import AppLayout from '../../components/shared/AppLayout';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 import ECGWaveform from '../../components/ECGWaveform';
-import { generateECGReportDoc, downloadBlob, shareReport } from '../../utils/docGenerator';
+import { generateECGReportDoc, downloadBlob, shareReport, generateECGReportPDF } from '../../utils/docGenerator';
 
 const NAV_ITEMS = [
   { section: 'MY HEALTH', items: [
@@ -21,6 +21,7 @@ export default function PatientECGHistory() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [downloadingPDFId, setDownloadingPDFId] = useState(null);
   const [sharingId, setSharingId] = useState(null);
 
   const handleDownloadSingle = async (ecg, analysis) => {
@@ -35,6 +36,20 @@ export default function PatientECGHistory() {
       console.error(err);
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+  const handleDownloadSinglePDF = async (ecg, analysis) => {
+    setDownloadingPDFId(ecg.id);
+    try {
+      const doc = await generateECGReportPDF(patient, analysis, ecg);
+      doc.save(`ECG_Report_${patient.last_name}_${new Date(ecg.received_at).toISOString().split('T')[0]}_${ecg.id}.pdf`);
+      toast.success("PDF Report downloaded successfully!");
+    } catch (err) {
+      toast.error("Failed to generate PDF report");
+      console.error(err);
+    } finally {
+      setDownloadingPDFId(null);
     }
   };
 
@@ -156,7 +171,10 @@ export default function PatientECGHistory() {
                     ))}
                     <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button onClick={(e) => { e.stopPropagation(); handleDownloadSingle(ecg, a); }} disabled={downloadingId === ecg.id} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: '0.875rem' }}>
-                        <Download size={14} /> {downloadingId === ecg.id ? 'Generating...' : 'Download Report'}
+                        <Download size={14} /> {downloadingId === ecg.id ? 'Generating...' : 'Download HTML'}
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDownloadSinglePDF(ecg, a); }} disabled={downloadingPDFId === ecg.id} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: '0.875rem', backgroundColor: '#00875A' }}>
+                        <FileText size={14} /> {downloadingPDFId === ecg.id ? 'Generating...' : 'Download PDF'}
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); handleShareSingle(ecg, a); }} disabled={sharingId === ecg.id} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: '0.875rem' }}>
                         <Share2 size={14} /> {sharingId === ecg.id ? 'Sharing...' : 'Share Report'}

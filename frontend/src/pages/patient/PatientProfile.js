@@ -25,6 +25,7 @@ export default function PatientProfile() {
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [saving, setSaving] = useState(false);
   const [savingPw, setSavingPw] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
   // Camera state
   const [showCamera, setShowCamera] = useState(false);
@@ -71,14 +72,31 @@ export default function PatientProfile() {
   // Start camera
   const startCamera = async () => {
     try {
+      // Check if mediaDevices is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast.error('Camera access is not supported in this browser.');
+        return;
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' },
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
       });
       setCameraStream(stream);
       setShowCamera(true);
     } catch (err) {
-      toast.error('Failed to access camera: ' + err.message);
+      console.error('Camera error:', err);
+      let errorMessage = 'Failed to access camera';
+      if (err.name === 'NotAllowedError') {
+        errorMessage = 'Camera access denied. Please allow camera access in your browser settings.';
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'No camera found on this device.';
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = 'Camera is already in use by another application.';
+      } else if (err.message) {
+        errorMessage += ': ' + err.message;
+      }
+      toast.error(errorMessage, { autoClose: 8000 });
     }
   };
 
@@ -122,6 +140,12 @@ export default function PatientProfile() {
       cameraStream.getTracks().forEach(track => track.stop());
       setCameraStream(null);
     }
+  };
+
+  const confirmRemovePicture = () => {
+    setForm(f => ({ ...f, profile_picture: '' }));
+    setShowRemoveConfirm(false);
+    toast.success('Profile picture removed');
   };
 
   return (
@@ -208,7 +232,7 @@ export default function PatientProfile() {
                   {form.profile_picture && (
                     <button 
                       type="button"
-                      onClick={() => setForm(f => ({ ...f, profile_picture: '' }))}
+                      onClick={() => setShowRemoveConfirm(true)}
                       style={{
                         background: 'transparent',
                         color: 'var(--danger)',
@@ -307,6 +331,60 @@ export default function PatientProfile() {
                     >
                       <Check size={18} />
                       Capture
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Remove Picture Confirmation Modal */}
+            {showRemoveConfirm && (
+              <div style={{
+                position: 'fixed',
+                top: 0, left: 0, right: 0, bottom: 0,
+                background: 'rgba(0,0,0,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                zIndex: 1000,
+                padding: 20
+              }}>
+                <div style={{
+                  background: 'var(--bg-card)',
+                  borderRadius: 12,
+                  padding: 24,
+                  width: '100%',
+                  maxWidth: 400,
+                  textAlign: 'center'
+                }}>
+                  <h3 style={{ marginBottom: 12, fontSize: '1.125rem' }}>Remove Profile Photo</h3>
+                  <p style={{ marginBottom: 20, color: 'var(--text-secondary)' }}>Are you sure you want to remove your profile photo?</p>
+                  <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                    <button 
+                      onClick={() => setShowRemoveConfirm(false)}
+                      style={{
+                        padding: '10px 24px',
+                        borderRadius: 8,
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg-primary)',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={confirmRemovePicture}
+                      style={{
+                        padding: '10px 24px',
+                        borderRadius: 8,
+                        border: 'none',
+                        background: '#EF4444',
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      Remove
                     </button>
                   </div>
                 </div>

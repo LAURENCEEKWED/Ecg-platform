@@ -5,7 +5,7 @@ import ECGChart from '../../components/shared/ECGChart';
 import RiskGauge from '../../components/shared/RiskGauge';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
-import { generateECGReportDoc, downloadBlob, shareReport } from '../../utils/docGenerator';
+import { generateECGReportDoc, downloadBlob, shareReport, generateECGReportPDF } from '../../utils/docGenerator';
 
 const NAV_ITEMS = [
   { section: 'MY HEALTH', items: [
@@ -22,6 +22,7 @@ export default function PatientAnalysis() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
   const [downloading, setDownloading] = useState(false);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
   const [sharing, setSharing] = useState(false);
 
   const handleDownload = async () => {
@@ -36,6 +37,20 @@ export default function PatientAnalysis() {
       console.error(err);
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setDownloadingPDF(true);
+    try {
+      const doc = await generateECGReportPDF(data.patient, data.latest_analysis, null);
+      doc.save(`ECG_Report_${data.patient.last_name}_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success("PDF Report downloaded successfully!");
+    } catch (err) {
+      toast.error("Failed to generate PDF report");
+      console.error(err);
+    } finally {
+      setDownloadingPDF(false);
     }
   };
 
@@ -105,13 +120,16 @@ export default function PatientAnalysis() {
             <Clock size={13} /> {new Date(la.analyzed_at).toLocaleString('en-GB', { dateStyle: 'long', timeStyle: 'short' })}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <span className={`risk-badge ${la.risk_category} ${la.risk_category === 'HIGH' ? 'pulse' : ''}`} style={{ fontSize: '0.9rem', padding: '6px 16px' }}>
             {la.risk_category} RISK
           </span>
           <span className="rhythm-badge" style={{ fontSize: '0.85rem' }}>{la.rhythm_class}</span>
           <button onClick={handleDownload} disabled={downloading} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Download size={16} /> {downloading ? 'Generating...' : 'Download'}
+            <Download size={16} /> {downloading ? 'Generating...' : 'Download HTML'}
+          </button>
+          <button onClick={handleDownloadPDF} disabled={downloadingPDF} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: '#00875A' }}>
+            <FileText size={16} /> {downloadingPDF ? 'Generating...' : 'Download PDF'}
           </button>
           <button onClick={handleShare} disabled={sharing} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <Share2 size={16} /> {sharing ? 'Sharing...' : 'Share'}

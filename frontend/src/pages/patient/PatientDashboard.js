@@ -109,6 +109,8 @@ export default function PatientDashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [liveECGData, setLiveECGData] = useState(null);
+  const [isLiveECGActive, setIsLiveECGActive] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -129,9 +131,20 @@ export default function PatientDashboard() {
       toast.success('✅ Your alert has been acknowledged by your doctor!', { autoClose: 6000 });
       fetchDashboard();
     });
+    const unsub3 = subscribe('LIVE_ECG_DATA', (event) => {
+      setLiveECGData(event.data.samples);
+      setIsLiveECGActive(true);
+      toast.info(`📡 Live ECG data received from ${event.data.source}!`, { autoClose: 3000 });
+      
+      // Auto-reset live indicator after 35 seconds
+      setTimeout(() => {
+        setIsLiveECGActive(false);
+      }, 35000);
+    });
     return () => {
       unsub1();
       unsub2();
+      unsub3();
     };
   }, [subscribe, fetchDashboard]);
 
@@ -621,8 +634,29 @@ export default function PatientDashboard() {
 
               {/* ECG Waveform */}
               <div style={{ marginBottom: 20 }}>
-                <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, marginBottom: 12 }}>Live ECG Preview</h4>
-                <ECGWaveform rhythmType={la?.rhythm_class || 'NORMAL'} height={180} animate={true} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, margin: 0 }}>
+                    {isLiveECGActive ? '🔴 Live ECG Data' : 'Live ECG Preview'}
+                  </h4>
+                  {isLiveECGActive && (
+                    <span style={{ 
+                      fontSize: '0.75rem', 
+                      fontWeight: 600, 
+                      color: '#22c55e',
+                      background: '#22c55e15',
+                      padding: '4px 12px',
+                      borderRadius: 999
+                    }}>
+                      RECENTLY UPDATED
+                    </span>
+                  )}
+                </div>
+                <ECGWaveform 
+                  rhythmType={la?.rhythm_class || 'NORMAL'} 
+                  height={180} 
+                  animate={true} 
+                  data={liveECGData}
+                />
               </div>
 
               {/* Recommendations */}

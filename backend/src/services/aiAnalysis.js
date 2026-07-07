@@ -1,12 +1,26 @@
+
 /**
  * AI Analysis Service
  * Uses FastAPI ML Inference Service
  * Falls back to simulation if ML service is not available
+ * Uses PTB-XL dataset for realistic ECG waveforms
  */
 
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 const RHYTHM_CLASSES = ['NORMAL', 'TACHYCARDIA', 'BRADYCARDIA', 'AFIB', 'PVC'];
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8001';
+
+// Load PTB-XL Sample Data
+let ptbxlData = [];
+try {
+  const dataPath = path.join(__dirname, '../../data/ptbxl_sample_data.json');
+  ptbxlData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  console.log(`Loaded ${ptbxlData.length} PTB-XL ECG samples`);
+} catch (err) {
+  console.warn('Could not load PTB-XL data file, using simulated waveforms');
+}
 
 /**
  * Calls the FastAPI ML service for ECG analysis
@@ -158,14 +172,14 @@ function predictCVDRisk(features) {
   score += classWeights[rhythm_class] || 0;
   score = Math.min(100, Math.max(0, Math.round(score + (Math.random() * 10 - 5))));
 
-  let risk_category = 'LOW';
-  if (score >= 67) risk_category = 'HIGH';
-  else if (score >= 34) risk_category = 'MODERATE';
+  let riskCategory = 'LOW';
+  if (score >= 67) riskCategory = 'HIGH';
+  else if (score >= 34) riskCategory = 'MODERATE';
 
   return {
     cvd_risk_score: score,
-    risk_category,
-    recommendations: generateRecommendations(rhythm_class, features, risk_category)
+    risk_category: riskCategory,
+    recommendations: generateRecommendations(rhythm_class, features, riskCategory)
   };
 }
 
@@ -225,11 +239,34 @@ function extractFeatures(ecgData) {
   };
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function getPtbxlWaveform(rhythmClass, durationSeconds = 5, sampleRate = 500) {
+  // Find all PTB-XL samples with matching rhythm class
+  const matchingSamples = ptbxlData.filter(s => s.rhythm_class === rhythmClass);
+  
+  if (matchingSamples.length > 0) {
+    // Pick a random sample from matching ones
+    const randomSample = matchingSamples[Math.floor(Math.random() * matchingSamples.length)];
+    const samplesNeeded = durationSeconds * sampleRate;
+    const availableSamples = randomSample.lead_ii.length;
+    let waveformData = randomSample.lead_ii.slice(0, samplesNeeded);
+    
+    // If we need more data than available, loop the waveform
+    while (waveformData.length < samplesNeeded) {
+      waveformData = [...waveformData, ...randomSample.lead_ii];
+    }
+    return waveformData.slice(0, samplesNeeded);
+  }
+  return null;
 }
 
 function generateECGWaveform(rhythmClass = 'NORMAL', durationSeconds = 5, sampleRate = 500) {
+  // First try to get PTB-XL sample
+  const ptbxlWaveform = getPtbxlWaveform(rhythmClass, durationSeconds, sampleRate);
+  if (ptbxlWaveform) {
+    return ptbxlWaveform;
+  }
+
+  // Fallback to simulated waveform if PTB-XL not available
   const numSamples = durationSeconds * sampleRate;
   const data = [];
   const bpmMap = { NORMAL: 72, TACHYCARDIA: 145, BRADYCARDIA: 42, AFIB: 85, PVC: 75 };
@@ -243,16 +280,16 @@ function generateECGWaveform(rhythmClass = 'NORMAL', durationSeconds = 5, sample
     if (rhythmClass === 'AFIB') {
       val = (Math.sin(i * 0.05) * 0.08) + (Math.random() - 0.5) * 0.15;
       const jitter = (Math.random() - 0.5) * 0.2;
-      const qrs_pos = 0.4 + jitter;
-      val += gauss(tInCycle, qrs_pos - 0.01, 0.005) * -0.3;
-      val += gauss(tInCycle, qrs_pos, 0.008) * 1.5;
-      val += gauss(tInCycle, qrs_pos + 0.015, 0.006) * -0.4;
-      val += gauss(tInCycle, qrs_pos + 0.1, 0.025) * 0.35;
+      const qrsPos = 0.4 + jitter;
+      val += gauss(tInCycle, qrsPos - 0.01, 0.005) * -0.3;
+      val += gauss(tInCycle, qrsPos, 0.008) * 1.5;
+      val += gauss(tInCycle, qrsPos + 0.015, 0.006) * -0.4;
+      val += gauss(tInCycle, qrsPos + 0.1, 0.025) * 0.35;
     } else if (rhythmClass === 'PVC' && Math.floor(i / rr) % 5 === 4) {
-      const qrs_pos = 0.4;
-      val += gauss(tInCycle, qrs_pos, 0.02) * -0.8;
-      val += gauss(tInCycle, qrs_pos + 0.03, 0.018) * -1.2;
-      val += gauss(tInCycle, qrs_pos + 0.08, 0.03) * 0.5;
+      const qrsPos = 0.4;
+      val += gauss(tInCycle, qrsPos, 0.02) * -0.8;
+      val += gauss(tInCycle, qrsPos + 0.03, 0.018) * -1.2;
+      val += gauss(tInCycle, qrsPos + 0.08, 0.03) * 0.5;
     } else {
       val += gauss(tInCycle, 0.15, 0.025) * 0.2;
       val += gauss(tInCycle, 0.38, 0.008) * -0.25;

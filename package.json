@@ -8,10 +8,12 @@
     "frontend"
   ],
   "scripts": {
+    "start": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev": "concurrently \"npm run dev:ml\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:ml": "cd ml && python main.py",
-    "dev:backend": "cd backend && npm run dev",
+    "dev:backend": "cd backend && npm start",
     "dev:frontend": "cd frontend && npm start",
+    "seed": "cd backend && npm run seed",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "train": "cd ml && python train_all.py"
   },

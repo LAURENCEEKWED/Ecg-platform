@@ -15,11 +15,17 @@ function isSimulationMode() {
 
 // Debug logs on startup
 console.log('\n📋 Notification Service Configuration:');
-console.log(`   - Email configured?`, isEmailConfigured() ? '✅ Yes' : '❌ No');
-console.log(`   - SMS configured?`, isSmsConfigured() ? '✅ Yes' : '❌ No');
-console.log(`   - Simulation mode?`, isSimulationMode() ? '✅ Active' : '❌ Disabled');
+console.log('   - Email configured?', isEmailConfigured() ? '✅ Yes' : '❌ No');
+if (isEmailConfigured()) {
+  console.log('   - Email Host:', process.env.EMAIL_HOST);
+  console.log('   - Email Port:', process.env.EMAIL_PORT);
+  console.log('   - Email From:', process.env.EMAIL_FROM);
+  console.log('   - Email User:', process.env.EMAIL_USER ? '(set)' : '(not set)');
+}
+console.log('   - SMS configured?', isSmsConfigured() ? '✅ Yes' : '❌ No');
+console.log('   - Simulation mode?', isSimulationMode() ? '✅ Active' : '❌ Disabled');
 if (isSmsConfigured()) {
-  console.log(`   - Twilio From: ${process.env.TWILIO_FROM_NUMBER}`);
+  console.log('   - Twilio From:', process.env.TWILIO_FROM_NUMBER);
 }
 console.log('');
 

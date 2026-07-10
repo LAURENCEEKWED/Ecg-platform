@@ -129,8 +129,9 @@ To enable password reset emails in production, you need to configure an email se
 ### Option A: Use AWS SES (Recommended for AWS)
 1. Go to AWS Console → SES
 2. Verify your sender email address or domain
-3. Request production access if needed
-4. Set these environment variables in your ECS task definition:
+3. Request production access if needed (to send to non-verified emails)
+4. Create SMTP credentials in SES (under "SMTP Settings")
+5. Set these environment variables in your ECS task definition:
    ```
    EMAIL_HOST=email-smtp.[region].amazonaws.com
    EMAIL_PORT=587
@@ -138,13 +139,15 @@ To enable password reset emails in production, you need to configure an email se
    EMAIL_USER=[your SES SMTP username]
    EMAIL_PASS=[your SES SMTP password]
    EMAIL_FROM=noreply@yourdomain.com
+   FRONTEND_URL=https://yourdomain.com
    ```
 
 ### Option B: Use Gmail (For Testing Only)
 ⚠️ Note: Gmail requires an App Password for this to work
 1. Enable 2FA on your Google account
-2. Create an App Password
-3. Set these environment variables:
+2. Go to https://myaccount.google.com/apppasswords
+3. Create an App Password (select "Mail" and "Other (Custom Name)")
+4. Set these environment variables:
    ```
    EMAIL_HOST=smtp.gmail.com
    EMAIL_PORT=587
@@ -152,12 +155,22 @@ To enable password reset emails in production, you need to configure an email se
    EMAIL_USER=your-email@gmail.com
    EMAIL_PASS=your-app-password
    EMAIL_FROM=your-email@gmail.com
+   FRONTEND_URL=https://yourdomain.com
    ```
 
 ### Environment Variables
 Make sure to set these in your deployment environment (Secrets Manager, ECS task definition, etc.):
 - `FRONTEND_URL`: Your app's public URL (e.g., `https://yourdomain.com`)
 - All the email variables above
+
+### Troubleshooting Email Issues
+1. **Check CloudWatch Logs**: Look for `📧` and `[SIMULATED]` messages in the backend logs!
+   - If you see `[SIMULATED]`, email is not configured properly!
+   - Look for error messages from nodemailer!
+2. **Verify Environment Variables**: Make sure all `EMAIL_*` variables are set correctly!
+3. **Check Sender Email Verification**: In SES, make sure your sender email is verified!
+4. **Check for Sandbox Mode**: SES is in sandbox mode by default - you can only send to verified emails!
+5. **Check Security Groups**: Ensure your ECS tasks can reach the SMTP server (outbound traffic on port 587 or 465)
 
 ---
 

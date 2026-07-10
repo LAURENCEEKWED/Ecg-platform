@@ -72,6 +72,13 @@ export default function PatientProfile() {
   // Start camera
   const startCamera = async () => {
     try {
+      // Check if HTTPS (required for camera API)
+      const isHttps = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (!isHttps) {
+        toast.error('Camera access requires HTTPS connection! Please ensure your site is served over HTTPS.');
+        return;
+      }
+
       // Check if mediaDevices is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         toast.error('Camera access is not supported in this browser.');

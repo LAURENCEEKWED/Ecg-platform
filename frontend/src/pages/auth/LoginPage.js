@@ -12,11 +12,6 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const demos = {
-    DOCTOR: { email: 'dr.kameni@ecgplatform.cm', password: 'doctor123', label: 'Dr. Marie Kameni — Cardiologist' },
-    PATIENT: { email: 'emmanuel.b@email.cm', password: 'patient123', label: 'Emmanuel Biya — Patient' },
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) return toast.error('Please enter email and password');
@@ -30,12 +25,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemo = (demoRole) => {
-    const d = demos[demoRole];
-    setEmail(d.email);
-    setPassword(d.password);
   };
 
   return (
@@ -129,17 +118,6 @@ export default function LoginPage() {
               {loading ? <><div className="loading-spinner" style={{ width: 18, height: 18, borderWidth: 2 }}></div> Signing in...</> : 'Sign In'}
             </button>
           </form>
-
-          {/* Demo credentials */}
-          <div style={{ marginTop: 28, padding: 16, background: '#F8FAFC', borderRadius: 10, border: '1px solid var(--border)' }}>
-            <p style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-secondary)', marginBottom: 10 }}>Demo Accounts</p>
-            {Object.entries(demos).map(([r, d]) => (
-              <div key={r} onClick={() => fillDemo(r)} style={{ cursor: 'pointer', padding: '8px 10px', borderRadius: 6, marginBottom: 4, background: 'transparent', border: '1px solid transparent', transition: '0.15s' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(31,78,121,0.06)'; e.currentTarget.style.border = '1px solid rgba(31,78,121,0.15)' }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.border = '1px solid transparent' }}>
-                <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>{d.label}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>{d.email} · {d.password}</div>
-              </div>
-            ))}
-          </div>
 
           <p style={{ textAlign: 'center', marginTop: 24, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
             Forgot your password?{' '}

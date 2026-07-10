@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../config/database');
 const { authenticate, requireRole } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { sendPatientAlertNotifications } = require('../services/notifications');
+const { sendPatientAlertNotifications, sendEmail } = require('../services/notifications');
 const { analyzeECG } = require('../services/aiAnalysis');
 
 // GET /api/v1/doctors/dashboard
@@ -128,6 +128,47 @@ router.post('/patients/:patientId/accept', authenticate, requireRole('DOCTOR'), 
   db.update('doctors', doctorProfile.id, {
     total_patients: db.count('patients', { doctor_id: doctorProfile.id })
   });
+
+  // Get patient user and doctor user details
+  const patientUser = db.findById('users', patient.user_id);
+  const doctorUser = req.user;
+
+  if (patientUser) {
+    // Send welcome email
+    const emailContent = `
+      <h2>Welcome to ECG AI Platform!</h2>
+      <p>Dear ${patient.first_name},</p>
+      <p>Great news! Dr. ${doctorUser.first_name} ${doctorUser.last_name} has accepted you as a patient!</p>
+      <p><strong>Doctor's Details:</strong></p>
+      <ul>
+        <li>Name: Dr. ${doctorUser.first_name} ${doctorUser.last_name}</li>
+        <li>Specialization: ${doctorProfile.specialization || 'Not specified'}</li>
+        <li>Department: ${doctorProfile.department || 'Not specified'}</li>
+        ${doctorProfile.phone ? `<li>Phone: ${doctorProfile.phone}</li>` : ''}
+      </ul>
+      <p>You can now log in to your account to view your ECG records and communicate with your doctor!</p>
+      <hr>
+      <p style="color: #666; font-size: 12px;">This is an automated message. Do not reply.</p>
+    `;
+    await sendEmail(
+      patientUser.email, 
+      'Welcome! Your Doctor Has Accepted You - ECG AI Platform', 
+      emailContent
+    );
+    console.log(`📧 Welcome email sent to patient ${patientUser.email}`);
+
+    // Send in-app message
+    db.insert('messages', {
+      sender_id: doctorUser.id,
+      receiver_id: patientUser.id,
+      content: `Hi ${patient.first_name}! I'm Dr. ${doctorUser.last_name}, and I'm happy to be your doctor! I look forward to working with you to monitor your heart health. Please feel free to reach out if you have any questions!`,
+      patient_id: patientId,
+      doctor_id: doctorProfile.id,
+      status: 'SENT',
+      created_at: new Date().toISOString()
+    });
+    console.log(`💬 In-app welcome message sent to patient ${patientUser.id}`);
+  }
 
   res.json({
     message: 'Patient accepted successfully',

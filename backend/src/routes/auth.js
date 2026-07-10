@@ -261,7 +261,9 @@ router.post('/forgot-password', asyncHandler(async (req, res) => {
   });
 
   // Send reset email
+  console.log('📧 Sending password reset email to:', user.email);
   const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+  console.log('🔗 Reset URL:', resetUrl);
   const emailContent = `
     <h2>Password Reset Request</h2>
     <p>Dear ${user.first_name},</p>
@@ -274,7 +276,8 @@ router.post('/forgot-password', asyncHandler(async (req, res) => {
     <p style="color: #666; font-size: 12px;">This is an automated message. Do not reply.</p>
   `;
 
-  await sendEmail(user.email, 'Password Reset Request - ECG AI Platform', emailContent);
+  const emailResult = await sendEmail(user.email, 'Password Reset Request - ECG AI Platform', emailContent);
+  console.log('📧 Email result:', emailResult);
 
   res.json({ message: 'If an account exists with that email, you will receive a password reset link' });
 }));

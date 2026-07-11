@@ -75,7 +75,7 @@ async function sendSMS(to, content) {
   console.log(`   To: ${to}`);
   console.log(`   Simulation mode: ${isSimulationMode()}`);
   console.log(`   SMS configured: ${isSmsConfigured()}`);
-  
+
   if (isSimulationMode() || !isSmsConfigured()) {
     console.log(`📱 [SIMULATED] SMS would be sent to ${to}: ${content.substring(0, 50)}...`);
     return { success: true, simulated: true };
@@ -84,10 +84,10 @@ async function sendSMS(to, content) {
   try {
     console.log(`   Loading twilio library...`);
     const twilio = require('twilio');
-    
+
     console.log(`   Creating Twilio client...`);
     const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    
+
     console.log(`   Sending message via Twilio...`);
     const message = await client.messages.create({
       body: content,
@@ -114,7 +114,7 @@ async function sendSMS(to, content) {
  */
 async function sendPatientAlertNotifications(patientId, alertData) {
   console.log(`\n🔔 sendPatientAlertNotifications called for patient ID: ${patientId}`);
-  
+
   const patient = db.findById('patients', patientId);
   if (!patient) {
     console.error('❌ Patient not found!');
@@ -126,7 +126,7 @@ async function sendPatientAlertNotifications(patientId, alertData) {
 
   const user = db.findById('users', patient.user_id);
   let settings = db.findOne('settings', { user_id: patient.user_id });
-  
+
   // Create default settings if not found
   if (!settings) {
     console.log('   Creating default settings for patient...');
